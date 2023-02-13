@@ -1,0 +1,24 @@
+.player {
+    $size: 1; // temp
+    position: absolute;
+    transform: scale(5);
+    height: calc(48px * $size);
+    width: calc(32px * $size);
+    animation-name: sprite;
+    animation-duration: var(--duration);
+    animation-timing-function: steps(var(--steps));
+    animation-iteration-count: var(--iterationCount);
+    animation-fill-mode: forwards;
+
+}
+
+@keyframes sprite {
+    from {
+
+        background-position: 0px;
+    }
+
+    to {
+        background-position: calc(var(--spriteWidth) * var(--steps));
+    }
+}
