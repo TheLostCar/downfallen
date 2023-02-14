@@ -1,15 +1,21 @@
 .player {
-    $size: 1; // temp
     position: absolute;
-    transform: scale(5);
-    height: calc(48px * $size);
-    width: calc(32px * $size);
+    height: calc(48px);
+    width: calc(32px);
     animation-name: sprite;
     animation-duration: var(--duration);
     animation-timing-function: steps(var(--steps));
     animation-iteration-count: var(--iterationCount);
     animation-fill-mode: forwards;
+    image-rendering: pixelated;
+}
 
+.hitbox {
+    position: absolute;
+    left: 8px;
+    bottom: 0px;
+    height: 32px;
+    width: 16px;
 }
 
 @keyframes sprite {
