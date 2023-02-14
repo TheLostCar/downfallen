@@ -9,28 +9,21 @@ const RIGHT = 'right'
 const useMovement = () => {
     const moving = useRef(new Set<IMovement>());
 
-    const moveLeft = () => {
-        moving.current.add(LEFT)
-    }
-    const moveRight = () => {
-        moving.current.add(RIGHT)
+    const startMoving = (direction: IMovement) => {
+        moving.current.add(direction);
     }
 
-    const stopMovingLeft = () => {
-        moving.current.delete(LEFT);
+    const stopMoving = (direction: IMovement) => {
+        moving.current.delete(direction);
     }
 
-    const stopMovingRight = () => {
-        moving.current.delete(RIGHT);
-    }
+    const isMoving = (direction?: IMovement) => {
+        if (direction !== undefined) return moving.current.has(direction);
+        return xor(moving.current.has(LEFT), moving.current.has(RIGHT));
 
-    const isMoving = () => xor(moving.current.has(LEFT), moving.current.has(RIGHT));
-    const isMovingRight = () => moving.current.has(RIGHT);
-    const isMovingLeft = () => moving.current.has(LEFT);
+    };
 
-
-
-    return [moving, moveLeft, moveRight, stopMovingLeft, stopMovingRight, isMoving, isMovingLeft, isMovingRight] as const
+    return [moving, startMoving, stopMoving, isMoving] as const
 }
 
 export default useMovement;

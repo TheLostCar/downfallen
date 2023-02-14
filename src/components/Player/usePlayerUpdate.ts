@@ -22,12 +22,6 @@ const animations = {
         duration: .7,
         loop: true,
     },
-    'idls': {
-        spriteSheet: '/spritesheets/Player/Fall.png',
-        steps: 2,
-        duration: .5,
-        loop: false
-    },
     'jump': {
         spriteSheet: '/spritesheets/Player/Biker_jump.png',
         steps: 3,
@@ -36,10 +30,10 @@ const animations = {
     }
 } as const
 
-const usePlayerUpdate = (playerRef: MutableRefObject<HTMLDivElement | null>, platformList: MutableRefObject<Set<MutableRefObject<HTMLDivElement | null>>>) => {
+const usePlayerUpdate = (playerRef: MutableRefObject<HTMLDivElement | null>, hitboxRef: MutableRefObject<HTMLDivElement | null>, platformList: MutableRefObject<Set<MutableRefObject<HTMLDivElement | null>>>) => {
     const [facing, faceLeft, faceRight] = useFacing('right')
     const [pos, move, setPos] = usePosition({ x: 0, y: 40 });
-    const [moving, moveLeft, moveRight, stopMovingLeft, stopMovingRight, isMoving, isMovingLeft, isMovingRight] = useMovement();
+    const [moving, startMoving, stopMoving, isMoving] = useMovement();
     const [animation, changeAnimation] = useAnimation<typeof animations>('idle', playerRef);
     const [speed, changeSpeed, addSpeed] = useSpeed();
     const [gravity, gravityCoef] = useGravity(10)
@@ -48,15 +42,15 @@ const usePlayerUpdate = (playerRef: MutableRefObject<HTMLDivElement | null>, pla
     useKeyboardControls({
         'a': {
             keyDown: () => {
-                moveLeft()
+                startMoving('left')
             },
             keyHold: () => { },
-            keyUp: () => { stopMovingLeft() }
+            keyUp: () => { stopMoving('left') }
         },
         'd': {
-            keyDown: () => { moveRight() },
+            keyDown: () => { startMoving('right') },
             keyHold: () => { },
-            keyUp: () => { stopMovingRight() }
+            keyUp: () => { stopMoving('right') }
         },
         'w': {
             keyDown: () => {
@@ -89,11 +83,9 @@ const usePlayerUpdate = (playerRef: MutableRefObject<HTMLDivElement | null>, pla
 
     const calculateHorizontalSpeed = () => {
         if (!isMoving()) return 0
-        if (isMovingLeft()) return -20
+        if (isMoving('left')) return -20
         return 20
     }
-
-
 
     const update = () => {
         if (speed.current.y <= 100) addSpeed({
@@ -116,17 +108,16 @@ const usePlayerUpdate = (playerRef: MutableRefObject<HTMLDivElement | null>, pla
             //
         }
 
-
-        if (isMovingLeft()) faceLeft();
-        if (isMovingRight()) faceRight();
+        if (isMoving('left')) faceLeft();
+        if (isMoving('right')) faceRight();
 
         // collisions
         platformList.current.forEach((v) => {
             if (v.current === null) return;
-            if (playerRef.current === null) return;
+            if (hitboxRef.current === null) return;
 
             const platformRect = v.current.getBoundingClientRect();
-            const player = playerRef.current.getBoundingClientRect();
+            const player = hitboxRef.current.getBoundingClientRect();
 
             const horizontalPlayerRect = {
                 x: player.x + speed.current.x,
@@ -150,7 +141,9 @@ const usePlayerUpdate = (playerRef: MutableRefObject<HTMLDivElement | null>, pla
                 verticalPlayerRect.y = player.y + speed.current.y
             }
 
+            horizontalPlayerRect.y = player.y + speed.current.y
             while (isColliding(horizontalPlayerRect, platformRect)) {
+                if (animation.current === 'walk') changeAnimation('idle');
                 if (speed.current.x === 0) break;
                 speed.current.x -= Math.sign(speed.current.x);
                 horizontalPlayerRect.x = player.x + speed.current.x;
